@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>都道府県当てゲーム</title>
+<style>
+  :root {
+    --primary: #ff6b6b;
+    --primary-hover: #fa5252;
+    --secondary: #4dabf7;
+    --secondary-hover: #339af0;
+    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --card-bg: #ffffff;
+    --text-color: #2d3748;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color);
+  }
+
+  .game-container {
+    background: var(--card-bg);
+    width: 90%;
+    max-width: 480px;
+    padding: 40px 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    box-sizing: border-box;
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .badge {
+    background-color: #fff0f0;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: bold;
+    padding: 5px 12px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 15px;
+  }
+
+  h1 {
+    font-size: 22px;
+    margin: 0 0 25px 0;
+    color: #1a202c;
+  }
+
+  #question {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin: 30px 0 40px 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+  }
+
+  button {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 14px 0;
+    width: 130px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+
+  button:active {
+    transform: scale(0.96);
+  }
+
+  .yes-btn {
+    background-color: var(--primary);
+    color: white;
+  }
+  .yes-btn:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 6px 12px rgba(255, 107, 107, 0.3);
+  }
+
+  .no-btn {
+    background-color: var(--secondary);
+    color: white;
+  }
+  .no-btn:hover {
+    background-color: var(--secondary-hover);
+    box-shadow: 0 6px 12px rgba(77, 171, 247, 0.3);
+  }
+
+  .reset-btn {
+    background-color: #adb5bd;
+    color: white;
+    width: 100%;
+    margin-top: 20px;
+    display: none;
+  }
+  .reset-btn:hover {
+    background-color: #868e96;
+  }
+
+  .result-box {
+    animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  @keyframes popUp {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="game-container" id="container">
+  <div class="badge">あきねーた風ゲーム</div>
+  <h1>あなたの住んでいる県を当てます！</h1>
+  
+  <div id="question">海に面していますか？</div>
+  
+  <div class="button-group" id="buttons">
+    <button class="yes-btn" onclick="answer('yes')">はい</button>
+    <button class="no-btn" onclick="answer('no')">いいえ</button>
+  </div>
+  
+  <button id="reset" class="reset-btn" onclick="resetGame()">もう一度遊ぶ</button>
+</div>
+
+<script>
+  const tree = {
+    start: { text: "海に面していますか？", yes: "sea_yes", no: "sea_no" },
+    sea_yes: { text: "うどんが有名ですか？", yes: "result_kagawa", no: "sea_yes_2" },
+    sea_yes_2: { text: "日本で一番面積が広い都道府県ですか？", yes: "result_hokkaido", no: "result_tokyo" },
+    sea_no: { text: "日本一高い山（富士山）がありますか？", yes: "result_yamanashi", no: "result_saitama" },
+    
+    result_kagawa: { result: "香川県ですね！" },
+    result_hokkaido: { result: "北海道ですね！" },
+    result_tokyo: { result: "東京都ですね！" },
+    result_yamanashi: { result: "山梨県ですね！" },
+    result_saitama: { result: "埼玉県ですね！" }
+  };
+
+  let currentStep = "start";
+
+  function answer(choice) {
+    currentStep = tree[currentStep][choice];
+    const nextData = tree[currentStep];
+
+    const qElement = document.getElementById("question");
+    
+    if (nextData.result) {
+      qElement.innerHTML = `<div class="result-box">🎉 ズバリ…<br><span style="color:var(--primary); font-size:26px;">${nextData.result}</span></div>`;
+      document.getElementById("buttons").style.display = "none";
+      document.getElementById("reset").style.display = "block";
+    } else {
+      qElement.innerText = nextData.text;
+    }
+  }
+
+  function resetGame() {
+    currentStep = "start";
+    document.getElementById("question").innerText = tree.start.text;
+    document.getElementById("buttons").style.display = "flex";
+    document.getElementById("reset").style.display = "none";
+  }
+</script>
+
+</body>
+</html>
